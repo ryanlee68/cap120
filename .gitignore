@@ -1,1 +1,3 @@
 cap120-env/
+__pycache__
+*.log
