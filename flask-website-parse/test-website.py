@@ -43,14 +43,18 @@ def convert():
         # Extract parameters
         cmd = json_data.get("cmd", "")
         rel = json_data.get("rel", 0)
-        j_values = {key: json_data[key] for key in json_data if key.startswith("j")}
         
         # Fixed parameters
         vel, accel, jerk, turn, cont = "vel", "accel", "jerk", "turn", "cont"
         
-        # Construct function string
-        function_string = f"robot.{cmd}(rel={rel},vel={vel},accel={accel},jerk={jerk},turn={turn},cont={cont}," \
-                          + ",".join([f"{k}={v}" for k, v in j_values.items()]) + ")"
+        # Determine command type and extract relevant parameters
+        if cmd == "lmove":
+            z = json_data.get("z", 0)
+            function_string = f"robot.{cmd}(rel={rel},vel={vel},accel={accel},jerk={jerk},turn={turn},cont={cont},z={-z})"
+        else:
+            j_values = {key: json_data[key] for key in json_data if key.startswith("j")}
+            function_string = f"robot.{cmd}(rel={rel},vel={vel},accel={accel},jerk={jerk},turn={turn},cont={cont}," \
+                              + ",".join([f"{k}={v}" for k, v in j_values.items()]) + ")"
         
         return render_template_string(template, output=function_string, input_text=data)
     except Exception as e:
