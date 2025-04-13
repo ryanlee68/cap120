@@ -11,35 +11,47 @@ turn = 0
 cont = 0
 j5_angle = 0 # cannister motor
 
+def e_stop():
+    if robot.get_input(7) == 0: # NC, low = triggered
+        robot.halt()
+        print("Emergency Stop Activated, Robot Halted")
+        start_time = time.time()
+        while robot.get_input(7) == 0:
+            time_passed = time.time() - start_time
+            print(f"Robot stopped for {int(time_passed)} seconds...")
+            time.sleep(1)
+        if robot.get_input(7) == 1:
+            print("Emergency Stop released, Resuming operation")
+            # robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=177.8,j1=177.8,j2=-139.8,j3=132.9,j4=0,j5=0)
+            
 def come_to_me():
-    robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=90.68625,j1=0,j2=0.308,j3=0,j4=175.84875, j5=0)
+    e_stop()
+    robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=90.68625,j1=0,j2=0.308,j3=0,j4=175.84875,j5=0)
 
 def reset():
+    e_stop()
     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j1=90)
     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j2=0)
     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j3=0)
-
-# removed j5 = 0 
-def check_canister(angle):
-    if angle >= 350:
+        
+def check_canister():
+    e_stop()
+    joints = robot.get_all_joint()
+    j5_current = joints[5]
+    print("Cannister position:", j5_current)
+    # print("Canniser position:", angle)
+    if j5_current >= 360:
+        robot.jmove(j5=0, vel=vel, accel=accel, jerk=jerk, turn=turn, cont=cont)                               
         print("Cannister almost emtpy, Please Refill")
-        robot.jmove(j5=0, vel=vel, accel=accel, jerk=jerk, turn=turn, cont=cont)
         global j5_angle
         j5_angle = 0
-
         input("Please press enter when cannister has been refilled")
         time.sleep(5)
         print("Cannister has been refilled, resuming operation")
-    
-# def check_canister():
-#     joints = robot.get_all_joint()
-#     j5_current = joints[5]  #
-#     if j5_current >= 390:
-#         print("cannister mty, refill")
-#         robot.jmove(j5=0, vel=vel, accel=accel, jerk=jerk, turn=turn, cont=cont)
-
+        
 def slot(further, col):
     global j5_angle
+    e_stop()
     if further:
         if col == 1:
             robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=89.308125,j1=14.9445,j2=-35.359,j3=24.1425,j4=-42.0075, j5=j5_angle)
@@ -65,21 +77,24 @@ def slot(further, col):
             robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=86.844375,j1=39.1995,j2=-102.4145,j3=-117.48375,j4=91.06875, j5=j5_angle)
         if col == 3:
             pass
-    j5_angle += 51
-    check_canister(j5_angle)
+
+    j5_angle += 35
+    check_canister()
 
 
 def z_move(z = -45):
+    e_stop()
     robot.lmove(rel=1,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont, z = z)
 
 def alt_force_drop():
-
+    e_stop()
     robot.jmove(rel=1,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j2=5)
     robot.jmove(rel=1,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j1=5)
     # robot.jmove(rel=1,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=-5)
     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j1=25)
 
 def force_drop(further, row):
+    e_stop()
     if further:
         if row < 16:
             current = robot.get_all_joint()
@@ -92,11 +107,13 @@ def force_drop(further, row):
         robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=current[0],j1=current[1]+5,j2=current[2]+5,j3=current[3]+5,j4=current[4])
 
 def mid_can(x, y):
+    e_stop()
     # robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=39.639375,j1=59.8995,j2=-24.2485,j3=-122.3775,j4=101.6325)
     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=35.364375,j1=64.368,j2=-37.96,j3=-113.88375,j4=86.81625)
     robot.lmove(rel=1,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,x=x, y=y)
 
 def canister(zone):
+    e_stop()
     # suck
     robot.output(0,0)
     if zone == 1:
@@ -172,9 +189,12 @@ def canister(zone):
         robot.jmove(rel=1,vel=50000,accel=50000,jerk=250000,turn=turn,cont=True,j3=-3)
         robot.jmove(rel=1,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=20)
     pass
+    
+
 
 
 def dynamic_slot(row, col):
+    e_stop()
     mult_dict = {
         1:12.5,
         2:12.5,
@@ -284,7 +304,6 @@ for j in range(1,25):
         robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j1=70)
         robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j2=0)
         dynamic_slot(row=j, col=i)
-
 
 
 robot.close()
