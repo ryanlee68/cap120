@@ -34,7 +34,7 @@ def reset():
     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j2=0)
     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j3=0)
         
-def check_canister():
+def check_canister(): # alarm is triggered when j5 is going back to 0 after reaching threshold
     e_stop()
     joints = robot.get_all_joint()
     j5_current = joints[5]
