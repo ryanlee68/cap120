@@ -23,6 +23,31 @@ def e_stop():
         if robot.get_input(7) == 1:
             print("Emergency Stop released, Resuming operation")
             # robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=177.8,j1=177.8,j2=-139.8,j3=132.9,j4=0,j5=0)
+
+# def laser_detect():
+#     if robot.get_input(5) == 1: # green light
+#         time.sleep(1)
+#         if robot.get_input(5) == 1:
+#             robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=0,j1=0,j2=0,j3=0,j4=0) # continue to box
+#     elif robot.get_input(4) == 1: # red light
+#         time.sleep(1)
+#         if robot.get_input(4) == 1:
+#             robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=0,j1=0,j2=0,j3=0,j4=0) # go to trash
+#             robot.output(0,1) # unsuck NC, high = off
+
+# def laser_detect():
+#     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=-22.404375,j1=-24.0345,j2=-1.0015,j3=-61.03125,j4=-243.39375) # laser location
+#     time.sleep(1)
+#     if robot.get_input(4) == 1: # 24v high green light 
+#         # robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=0,j1=0,j2=0,j3=0,j4=0)# continue to box
+#         print("1 lid detected, continuing to box")
+#     elif robot.get_input(5) == 1: # 24v high red light
+#         print("2 lids detected, moving to reject pile")
+#         robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=0,j1=0,j2=0,j3=0,j4=0) # go to trash
+#         robot.output(0,1) # unsuck NC, high = off
+#         # robot.output(2,0) # air knife blow lid off
+#         time.sleep(1)
+#         # robot.output(2,1)
             
 def come_to_me():
     e_stop()
@@ -52,6 +77,7 @@ def check_canister(): # alarm is triggered when j5 is going back to 0 after reac
 def slot(further, col):
     global j5_angle
     e_stop()
+    # laser_detect()
     if further:
         if col == 1:
             robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=89.308125,j1=14.9445,j2=-35.359,j3=24.1425,j4=-42.0075, j5=j5_angle)
@@ -190,8 +216,6 @@ def canister(zone):
         robot.jmove(rel=1,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j0=20)
     pass
     
-
-
 
 def dynamic_slot(row, col):
     e_stop()
