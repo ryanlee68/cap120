@@ -59,23 +59,22 @@ def reset():
     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j2=0)
     robot.jmove(rel=0,vel=vel,accel=accel,jerk=jerk,turn=turn,cont=cont,j3=0)
         
-def check_canister(): # alarm is triggered when j5 is going back to 0 after reaching threshold
+def check_canister(j5_angle): # alarm is triggered when j5 is going back to 0 after reaching threshold
     e_stop()
     joints = robot.get_all_joint()
     j5_current = joints[5]
     print("Cannister position:", j5_current)
     # print("Canniser position:", angle)
     if j5_current >= 360:
-        robot.jmove(j5=0, vel=vel, accel=accel, jerk=jerk, turn=turn, cont=cont)                               
+        robot.jmove(j5=0, vel=1000, accel=500, jerk=500, turn=turn, cont=cont)                               
         print("Cannister almost emtpy, Please Refill")
-        global j5_angle
-        j5_angle = 0
         input("Please press enter when cannister has been refilled")
         time.sleep(5)
         print("Cannister has been refilled, resuming operation")
+        j5_angle = 0
+    return j5_angle
         
-def slot(further, col):
-    global j5_angle
+def slot(further, col, j5_angle):
     e_stop()
     # laser_detect()
     if further:
@@ -105,7 +104,8 @@ def slot(further, col):
             pass
 
     j5_angle += 35
-    check_canister()
+    j5_angle = check_canister(j5_angle)
+    return j5_angle
 
 
 def z_move(z = -45):
