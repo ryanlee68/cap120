@@ -1,0 +1,4 @@
+{"cmd":"jmove","rel":1,"vel":50000,"accel":50000,"jerk":250000,"turn":0,"cont":1,"j3":3}
+{"cmd":"jmove","rel":1,"vel":50000,"accel":50000,"jerk":250000,"turn":0,"cont":1,"j3":-3}
+{"cmd":"jmove","rel":1,"vel":50000,"accel":50000,"jerk":250000,"turn":0,"cont":1,"j3":3}
+{"cmd":"jmove","rel":1,"vel":50000,"accel":50000,"jerk":250000,"turn":0,"cont":1,"j3":-3}
