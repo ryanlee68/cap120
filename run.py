@@ -3,13 +3,16 @@ from dorna2 import Dorna
 import time
 # Connect to the robot
 
-ip = "169.254.81.54"
-dorna = Robot(ip)
+def main():
+    ip = "169.254.81.54"
+    dorna = Robot(ip)
 
-dorna.startup()
-dorna.robot.jmove(rel=0,vel=dorna.vel,accel=dorna.accel,jerk=dorna.jerk,turn=dorna.turn,cont=dorna.cont,j1=70, j2=0)
-dorna.dynamic_slot(row=1, col=1)
-dorna.linear_act(1)
+    dorna.startup()
+    dorna.robot.jmove(rel=0,vel=dorna.vel,accel=dorna.accel,jerk=dorna.jerk,turn=dorna.turn,cont=dorna.cont,j1=70, j2=0)
+    if not dorna.dynamic_slot(row=1, col=1):
+        print("duplicate seal detected")
+    
+    # dorna.linear_act(1)
 
 
 # for j in range(1,25):
@@ -19,4 +22,7 @@ dorna.linear_act(1)
 #         dynamic_slot(row=j, col=i)
 
 
-dorna.robot.close()
+    dorna.robot.close()
+
+if __name__ == "__main__":
+    main()

@@ -1,5 +1,8 @@
 from dorna2 import Dorna
 import time
+import queue
+import dorna2.ws
+import types
 
 class Robot:
     vel = 1900
@@ -12,18 +15,67 @@ class Robot:
         self.robot = Dorna()
         self.robot.connect(ip)  # Replace with your robot's IP address
 
-    def jerk(self, jerk_amount):
-        # self.robot.jmove(rel=1,vel=50000,accel=50000,jerk=250000,turn=self.turn,cont=True,j3=jerk_amount)
-        # self.robot.jmove(rel=1,vel=50000,accel=50000,jerk=250000,turn=self.turn,cont=True,j3=-jerk_amount)
-        # self.robot.jmove(rel=1,vel=50000,accel=50000,jerk=250000,turn=self.turn,cont=True,j3=jerk_amount)
-        # self.robot.jmove(rel=1,vel=50000,accel=50000,jerk=250000,turn=self.turn,cont=True,j3=-jerk_amount)
-        self.robot.play("scripts/jerk.txt")
+    def _ws_getstate(self):
+        """Return a dict that *can* be pickled (drop locks, loops, sockets…)."""
+        state = self.__dict__.copy()
+        for k in ("msg", "loop", "reader", "writer",
+                "server_thread", "callback", "_event_list"):
+            state.pop(k, None)                # runtime‑only things – discard
+        return state
+
+    def _ws_setstate(self, state):
+        """Re‑create the runtime objects that were skipped in __getstate__."""
+        self.__dict__.update(state)
+        # rebuild the runtime helpers with a safe default
+        self.msg            = queue.Queue(100)
+        self.loop           = None
+        self.reader         = None
+        self.writer         = None
+        self.server_thread  = None
+        self.callback       = None
+        self._event_list    = []
+
+    # Monkey‑patch the mix‑in class once, for the whole program
+    dorna2.ws.WS.__getstate__ = _ws_getstate
+    dorna2.ws.WS.__setstate__ = _ws_setstate
+
+    def suck(self):
+        self.robot.output(0,0)
+    
+    def unsuck(self):
+        self.robot.output(0,1)
+
+    def load_cell(self):
+        self.robot.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=35.724375,j1=15.381,j2=-59.5015,j3=-44.76375,j4=91.18125)
+        self.z_move(-35)
+        self.unsuck()
+        time.sleep(3)
+        if self.robot.get_input(6) == 1:
+            print("only one seal detected")
+            self.z_move(-10)
+            self.suck()
+            self.z_move(45)
+            return True
+        elif self.robot.get_input(6) == 0:
+            self.trash()
+            return False
+    
+    def trash(self):
+        print("Duplicate Lid detected: Air knife activated")
+
+    def jerk_move(self):
+        jerk_amount = 3
+        self.robot.jmove(rel=1,vel=50000,accel=50000,jerk=250000,turn=self.turn,cont=True,j3=jerk_amount)
+        self.robot.jmove(rel=1,vel=50000,accel=50000,jerk=250000,turn=self.turn,cont=True,j3=-jerk_amount)
+        self.robot.jmove(rel=1,vel=50000,accel=50000,jerk=250000,turn=self.turn,cont=True,j3=jerk_amount)
+        self.robot.jmove(rel=1,vel=50000,accel=50000,jerk=250000,turn=self.turn,cont=True,j3=-jerk_amount)
+        # self.robot.play(file="scripts/jerk.txt")
 
     def linear_act(self, joint_move):
         self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j5=joint_move)
 
     def startup(self):
-        self.robot.play("scripts/startup.txt")
+        self.robot.play(file="scripts/startup.txt")
 
     def come_to_me(self):
         self.robot.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=90.68625,j1=0,j2=0.308,j3=0,j4=175.84875)
@@ -85,54 +137,59 @@ class Robot:
             self.robot.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=current[0],j1=current[1]+5,j2=current[2]+5,j3=current[3]+5,j4=current[4])
 
     def mid_can(self, x, y):
-        # self.robot.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=39.639375,j1=59.8995,j2=-24.2485,j3=-122.3775,j4=101.6325)
-        self.robot.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=35.364375,j1=64.368,j2=-37.96,j3=-113.88375,j4=86.81625)
+        self.robot.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=-0.084375,j1=79.281,j2=-63.718,j3=-102.58875,j4=90.97875)
         self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,x=x, y=y)
 
     def canister(self, zone):
         # suck
-        self.robot.output(0,0)
+        self.suck()
         if zone == 1:
-            z = 55
-            self.mid_can(4,-10)
+            z = 50
+            # self.mid_can(4,-10)
+            self.mid_can(0,0)
             self.z_move(z=-z)
             self.z_move(z=z)
-            self.jerk(3)
-            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=20)
+            self.jerk_move()
+            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=45)
         elif zone == 2:
-            z = 55
-            self.mid_can(5,5)
+            z = 50
+            # self.mid_can(5,5)
+            self.mid_can(0,0)
             self.z_move(z=-z)
             self.z_move(z=z)
-            self.jerk(3)
-            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=20)
+            self.jerk_move()
+            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=45)
         elif zone == 3:
-            z = 55
-            self.mid_can(-10,-15)
+            z = 45
+            # self.mid_can(-10,-15)
+            self.mid_can(0,0)
             self.z_move(z=-z)
             self.z_move(z=z)
-            self.jerk(3)
-            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=20)
+            self.jerk_move()
+            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=45)
         elif zone == 4:
-            self.mid_can(4,11)
-            self.z_move(z=-38)
-            self.z_move(z=38)
-            self.jerk(3)
-            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=20)
+            # self.mid_can(4,11)
+            self.mid_can(0,0)
+            self.z_move(z=-45)
+            self.z_move(z=45)
+            self.jerk_move()
+            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=45)
         elif zone == 5:
-            z = 55
-            self.mid_can(-5,10)
+            z = 45
+            # self.mid_can(-5,10)
+            self.mid_can(0,0)
             
             self.z_move(z=-z)
             self.z_move(z=z)
-            self.jerk(3)
-            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=20)
+            self.jerk_move()
+            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=45)
         elif zone == 6:
-            self.mid_can(0,-11)
+            # self.mid_can(0,-11)
+            self.mid_can(0,0)
             self.z_move(z=-38)
             self.z_move(z=38)
-            self.jerk(3)
-            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=20)
+            self.jerk_move()
+            self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=45)
         pass
 
 
@@ -152,11 +209,14 @@ class Robot:
                 self.canister(zone=zone)
                 multiple = mult_dict[zone]
                 y_down = row * -multiple + multiple
+                if not self.load_cell():
+                    return False
+
                 self.slot(further, col)
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
                 self.z_move(z=-40)
-                self.robot.output(0,1)
+                self.unsuck()
                 # time.sleep(1)
 
                 self.force_drop(further, row=row)
@@ -171,7 +231,7 @@ class Robot:
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
                 self.z_move(z=-45)
-                self.robot.output(0,1)
+                self.unsuck()
                 self.force_drop(further, row=row)
                 self.z_move(z=45)
             if col == 3:
@@ -183,7 +243,7 @@ class Robot:
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
                 self.z_move(z=-45)
-                self.robot.output(0,1)
+                self.unsuck()
                 self.force_drop(further, row=row)
                 self.z_move(z=45)
         elif row >= 21 and row <= 25:
@@ -200,7 +260,7 @@ class Robot:
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
                 self.z_move(z=-20)
-                self.robot.output(0,1)
+                self.unsuck()
                 # force_drop(further, row=row)
                 # alt_force_drop()
                 # z_move(z=45)
@@ -215,7 +275,7 @@ class Robot:
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
                 self.z_move(z=-25)
-                self.robot.output(0,1)
+                self.unsuck()
                 # force_drop(further, row=row)
                 self.z_move(z=45)
             if col == 3:
@@ -227,7 +287,7 @@ class Robot:
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
                 self.z_move(z=-60)
-                self.robot.output(0,1)
+                self.unsuck()
                 # force_drop(further, row=row)
                 self.z_move(z=45)
         else:
