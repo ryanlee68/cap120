@@ -50,17 +50,23 @@ class Robot:
         self.z_move(-35)
         self.unsuck()
         time.sleep(3)
-        if self.robot.get_input(6) == 1:
-            print("only one seal detected")
+        if self.robot.get_input(6) == 0:
+            print("only 1 or 0 seal(s) detected")
             self.z_move(-10)
             self.suck()
             self.z_move(45)
             return True
-        elif self.robot.get_input(6) == 0:
+        elif self.robot.get_input(6) == 1:
+            print("2+ seals detected")
             self.trash()
             return False
+            #TODO: fix here
+            # return True
     
     def trash(self):
+        self.robot.output(3,1)
+        time.sleep(1)
+        self.robot.output(3,0)
         print("Duplicate Lid detected: Air knife activated")
 
     def jerk_move(self):
@@ -144,7 +150,7 @@ class Robot:
         # suck
         self.suck()
         if zone == 1:
-            z = 50
+            z = 45
             # self.mid_can(4,-10)
             self.mid_can(0,0)
             self.z_move(z=-z)
@@ -152,7 +158,7 @@ class Robot:
             self.jerk_move()
             self.robot.jmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=45)
         elif zone == 2:
-            z = 50
+            z = 45
             # self.mid_can(5,5)
             self.mid_can(0,0)
             self.z_move(z=-z)
@@ -227,6 +233,8 @@ class Robot:
                 self.canister(zone=zone)
                 multiple = mult_dict[zone]
                 y_down = row * -multiple + multiple
+                if not self.load_cell():
+                    return False
                 self.slot(further, col)
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
@@ -246,7 +254,7 @@ class Robot:
                 self.unsuck()
                 self.force_drop(further, row=row)
                 self.z_move(z=45)
-        elif row >= 21 and row <= 25:
+        elif row >= 19 and row <= 25:
             further = False
             if col == 1:
                 zone = 2
