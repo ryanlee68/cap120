@@ -46,28 +46,38 @@ class Robot:
         self.robot.output(0,1)
 
     def load_cell(self):
-        self.robot.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=35.724375,j1=15.381,j2=-59.5015,j3=-44.76375,j4=91.18125)
+        self.robot.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=39.898125,j1=25.128,j2=-58.237,j3=-53.73,j4=91.1025)
+        # self.robot.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=35.724375,j1=15.381,j2=-59.5015,j3=-44.76375,j4=91.18125)
         self.z_move(-35)
         self.unsuck()
-        time.sleep(3)
-        if self.robot.get_input(6) == 0:
-            print("only 1 or 0 seal(s) detected")
-            self.z_move(-10)
+        self.z_move(45)
+        time.sleep(1)
+        if self.robot.get_input(6) == 1:
+            print("1 SEAL DETECTED")
+            self.robot.output(4,1)
+            self.z_move(-45)
+            self.z_move(-12)
+            # self.z_move(-55)
             self.suck()
-            self.z_move(45)
+            self.z_move(12)
             return True
-        elif self.robot.get_input(6) == 1:
-            print("2+ seals detected")
-            self.trash()
+        elif self.robot.get_input(6) == 0:
+            print("2+ seal(s) detected, blowing lid off load cell")
+            self.robot.output(4,0)
+            while True:
+                if self.robot.get_input(6) == 1:
+                    self.robot.output(4,1)
+                    return False
+            # self.trash()
             return False
             #TODO: fix here
             # return True
     
-    def trash(self):
-        self.robot.output(3,1)
-        time.sleep(1)
-        self.robot.output(3,0)
-        print("Duplicate Lid detected: Air knife activated")
+    # def trash(self):
+    #     self.robot.output(3,1)
+    #     time.sleep(1)
+    #     self.robot.output(3,0)
+    #     print("Duplicate Lid detected: Air knife activated")
 
     def jerk_move(self):
         jerk_amount = 3
@@ -201,12 +211,12 @@ class Robot:
 
     def dynamic_slot(self, row, col):
         mult_dict = {
-            1:12.5,
-            2:12.5,
-            3:12.5,
-            4:16.5,
-            5:12.5,
-            6:12.5
+            1:12,
+            2:12,
+            3:12,
+            4:16,
+            5:12,
+            6:12
         }
         if row < 19:
             further = True
@@ -220,13 +230,13 @@ class Robot:
 
                 self.slot(further, col)
                 # unsuck
-                self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
-                self.z_move(z=-40)
+                self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down+2)
+                self.z_move(z=-50)
                 self.unsuck()
                 # time.sleep(1)
 
                 self.force_drop(further, row=row)
-                self.z_move(z=45)
+                self.z_move(z=55)
             
             if col == 2:
                 zone = 3
@@ -238,22 +248,24 @@ class Robot:
                 self.slot(further, col)
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
-                self.z_move(z=-45)
+                self.z_move(z=-55)
                 self.unsuck()
                 self.force_drop(further, row=row)
-                self.z_move(z=45)
+                self.z_move(z=55)
             if col == 3:
                 zone = 5
                 self.canister(zone=zone)
                 multiple = mult_dict[zone]
                 y_down = row * -multiple + multiple
+                if not self.load_cell():
+                    return False
                 self.slot(further, col)
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)
-                self.z_move(z=-45)
+                self.z_move(z=-55)
                 self.unsuck()
                 self.force_drop(further, row=row)
-                self.z_move(z=45)
+                self.z_move(z=55)
         elif row >= 19 and row <= 25:
             further = False
             if col == 1:
@@ -262,6 +274,8 @@ class Robot:
                 multiple = mult_dict[zone]
                 # temp_row = row - 25
                 y_down = abs(row-25) * multiple
+                if not self.load_cell():
+                    return False
                 # y_down = 30
                 print(y_down)
                 self.slot(further, col)
@@ -278,6 +292,8 @@ class Robot:
                 self.canister(zone=zone)
                 multiple = mult_dict[zone]
                 y_down = abs(row-25) * multiple
+                if not self.load_cell():
+                    return False
                 print(y_down)
                 self.slot(further, col)
                 # unsuck
@@ -291,6 +307,8 @@ class Robot:
                 self.canister(zone=zone)
                 multiple = mult_dict[zone]
                 y_down = row * -multiple + multiple
+                if not self.load_cell():
+                    return False
                 self.slot(further, col)
                 # unsuck
                 self.robot.lmove(rel=1,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont, y = y_down)

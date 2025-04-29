@@ -3,7 +3,7 @@ import time
 
 # Connect to the robot
 robot = Dorna()
-robot.connect("169.254.154.191")
+robot.connect("169.254.81.54")
 
 
 while True:
@@ -11,14 +11,14 @@ while True:
     # time.sleep(5)
     # robot.output(4,0)
     # time.sleep(5)
-    if robot.get_input(6) == 0: # 1 lid
+    if robot.get_input(6) == 1: # 1 lid
         print("1 LID DETECTED")
         robot.output(4,0)
         # time.sleep(2)
         # robot.output(4,0)
         # time.sleep(2)
-    elif robot.get_input(6) == 1:
-        print("2+ LID DETECTED")
+    elif robot.get_input(6) == 0:
+        print("2+ or no LID DETECTED")
         robot.output(4,1)
         # robot.output(4,1)
         # time.sleep(2)
