@@ -24,9 +24,9 @@ def main():
     robot.dorna.jmove(**robot.no_rel,j0=0)
     for j in range(1,26):
         for i in range(1,4):
-            if i == 1 and j == 1:
-                i = 1
-                j = 19
+            # if i == 1 and j == 1:
+            #     i = 1
+            #     j = 19
             print(f"Count: {utils.get_count()}")
             if utils.check_count():
                 print(f"Linear Actuator has been raised at count: {utils.get_count()}")
