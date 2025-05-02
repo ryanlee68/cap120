@@ -34,21 +34,23 @@ void loop() {
     Serial.print(weight);
     Serial.println(" grams");
 
-    if (weight < 2.8 && weight > 1.0) {
+    if (weight <= 3 && weight > 2) {
       digitalWrite(PIN_ONE_LID, HIGH);
       digitalWrite(PIN_MULTIPLE_LIDS, LOW);
       Serial.println("1 lid detected");
-    } else if (weight > 2.7){
+    } 
+    else if (weight > 3){
       digitalWrite(PIN_ONE_LID, LOW);
       digitalWrite(PIN_MULTIPLE_LIDS, HIGH);
       Serial.println("2 + lids detected");
     }
-  } else {
-    // Serial.println("HX711 not found.");
-    Serial.println("No lid detected");
-    digitalWrite(PIN_ONE_LID, LOW);
-    digitalWrite(PIN_MULTIPLE_LIDS, LOW);
-  }
+    else {
+      // Serial.println("HX711 not found.");
+      Serial.println("No lid detected");
+      digitalWrite(PIN_ONE_LID, LOW);
+      digitalWrite(PIN_MULTIPLE_LIDS, LOW);
+    }
+  } 
 
   delay(100); // Slight delay for stable readings
 }

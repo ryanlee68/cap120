@@ -11,15 +11,17 @@ while True:
     # time.sleep(5)
     # robot.output(4,0)
     # time.sleep(5)
+    print(f"robot.get_input(6): {robot.get_input(6)}")
+    print(f"robot.get_input(2): {robot.get_input(2)}")
     if robot.get_input(6) == 1: # 1 lid
         print("1 LID DETECTED")
-        robot.output(4,0)
+        # robot.output(4,0)
         # time.sleep(2)
         # robot.output(4,0)
         # time.sleep(2)
-    elif robot.get_input(6) == 0:
+    elif robot.get_input(4) == 0:
         print("2+ or no LID DETECTED")
-        robot.output(4,1)
+        # robot.output(4,1)
         # robot.output(4,1)
         # time.sleep(2)
         # robot.output(4,0)

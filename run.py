@@ -1,26 +1,44 @@
 from Robot import Robot
 from dorna2 import Dorna
 import time
+import utils
 # Connect to the robot
 
 def main():
+    vel = 1900
+    accel = 900
+    jerk = 900
+    turn = 0
+    cont = True
+
     ip = "169.254.81.54"
-    dorna = Robot(ip)
+    dorna = Dorna()
+    dorna.connect(ip)
 
-    dorna.startup()
-    dorna.robot.jmove(rel=0,vel=dorna.vel,accel=dorna.accel,jerk=dorna.jerk,turn=dorna.turn,cont=dorna.cont,j1=70, j2=0)
+    robot = Robot(dorna, vel, accel, jerk, turn, cont)
 
-    
+    robot.startup()
+    robot.dorna.output(4,1)
+    robot.dorna.output(0,1)
+    robot.dorna.jmove(**robot.no_rel,j1=70, j2=0)
+    robot.dorna.jmove(**robot.no_rel,j0=0)
+    for j in range(1,26):
+        for i in range(1,4):
+            if i == 1 and j == 1:
+                i = 1
+                j = 19
+            print(f"Count: {utils.get_count()}")
+            if utils.check_count():
+                print(f"Linear Actuator has been raised at count: {utils.get_count()}")
+                robot.linear_act()
 
-    # for j in range(1,25):
-    #     for i in range(1,4):
-    #         if not dorna.dynamic_slot(row=j, col=i):
-    #             print(f"duplicate seal detected, redoing row={j}, col={i}")
-    #             dorna.robot.jmove(rel=0,vel=dorna.vel,accel=dorna.accel,jerk=dorna.jerk,turn=dorna.turn,cont=dorna.cont,j1=70, j2=0)
-    #             # dorna.dynamic_slot(row=j, col=i)
-    #             pass
-    #         # dorna.robot.jmove(rel=1,vel=dorna.vel,accel=dorna.accel,jerk=dorna.jerk,turn=dorna.turn,cont=dorna.cont,j1=40,j2=40)
-    #         dorna.robot.jmove(rel=0,vel=dorna.vel,accel=dorna.accel,jerk=dorna.jerk,turn=dorna.turn,cont=dorna.cont,j1=70, j2=0)
+            utils.count()
+            print(f"Performing row={j}, col={i}")
+            while not robot.dynamic_slot(row=j, col=i):
+                utils.count()
+                print(f"duplicate seal or no seal detected, redoing row={j}, col={i}")
+                robot.dorna.jmove(**robot.no_rel,j1=70, j2=0)
+            robot.dorna.jmove(**robot.no_rel,j1=70, j2=0)
     
     # dorna.linear_act(1)
 
