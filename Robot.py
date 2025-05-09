@@ -6,6 +6,8 @@ import types
 import utils
 
 class Robot:
+
+    # scp -r ryanlee@Ryans-MacBook-Air.local:~/Desktop/cap120/dorna_app /home/dorna/Downloads
     # zone 1: row 1-18 col 1
     # zone 4: row 19-25 col 1
     # zone 2: row 1-18 col 2
