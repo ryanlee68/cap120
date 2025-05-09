@@ -7,13 +7,22 @@ import requests
 # robot = Dorna()
 
 # robot.connect("169.254.81.54")
-ip = "169.254.81.54"
-dorna = Robot(ip)
+vel = 1900
+accel = 900
+jerk = 900
+turn = 0
+cont = True
 
-dorna.startup()
+ip = "169.254.81.54"
+dorna = Dorna()
+dorna.connect(ip)
+
+robot = Robot(dorna, vel, accel, jerk, turn, cont)
+
+robot.startup()
 # dorna.robot.output(4,1)
 # dorna.robot.output(0,1)
-dorna.robot.output(0,0)
+dorna.output(0,0)
 # dorna.robot.jmove(rel=0,vel=dorna.vel,accel=dorna.accel,jerk=dorna.jerk,turn=dorna.turn,cont=dorna.cont,j1=70, j2=0)
 # unsuck
 # robot.output(0,1)

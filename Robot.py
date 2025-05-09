@@ -6,6 +6,11 @@ import types
 import utils
 
 class Robot:
+    # zone 1: row 1-18 col 1
+    # zone 4: row 19-25 col 1
+    # zone 2: row 1-18 col 2
+    # zone 5: row 19-25 col 2
+    # 
     linear_act_raise_num = -5
     max_retries = 5
     threshold = {
@@ -14,10 +19,10 @@ class Robot:
         3:18
     }
     mult_dict = {
-            1:12,
+            1:12.5,
             2:11.5,
             3:12,
-            4:16,
+            4:13,
             5:12,
             6:12
     }
@@ -25,7 +30,7 @@ class Robot:
         1:-39,
         2:-65,
         3:-50,
-        4:-50,
+        4:-46,
         5:-50,
         6:-50
     }
@@ -60,9 +65,9 @@ class Robot:
                 (self.dorna.jmove, dict(j0=87.103125, j1=6.966,   j2=-30.9985, j3=28.845, j4=195.5925)),
             ],
             4: [
-                (self.dorna.jmove, dict(j4=35.94375)),
-                (self.dorna.jmove, dict(j0=88.38,    j2=-99.7045, j3=-113.79375, j4=35.94375)),
-                (self.dorna.jmove, dict(j1=28.8045)),
+                # j1=39.897,j2=-105.0865,j3=-114.51375,j4=35.94375
+                (self.dorna.jmove, dict(j0=88.38, j2=-105.0865,j3=-114.51375, j4=35.94375)),
+                (self.dorna.jmove, dict(j1=39.897)),
             ],
             5: [
                 (self.dorna.jmove, dict(j0=86.844375)),
@@ -75,7 +80,7 @@ class Robot:
         }
         self.force_drop_actions = {
             1: [
-                (self.dorna.jmove, dict(j1=6,j2=-8,j3=-16,j4=-3)),
+                (self.dorna.jmove, dict(j1=6,j2=-4,j3=-16,j4=-3)),
             ],
             2: [
                 # (self.dorna.jmove, dict(j1=6,j2=-8,j3=-16,j4=-3)),
@@ -85,7 +90,7 @@ class Robot:
                 (self.dorna.jmove, dict(j1=6,j2=-8,j3=-16,j4=-3)),
             ],
             4: [
-                (self.dorna.jmove, dict(j1=6,j2=-8,j3=-16,j4=-3)),
+                (self.dorna.jmove, dict(j1=9,j2=4,j3=15,j4=-3)),
             ],
             5: [
                 (self.dorna.jmove, dict(j1=6,j2=-8,j3=-16,j4=-3)),
@@ -126,6 +131,7 @@ class Robot:
         self.dorna.output(0,1)
 
     def load_cell(self):
+        return "1_SEAL"
         self.dorna.jmove(**self.no_rel,j0=39.47625,j1=16.488,j2=-52.522,j3=-50.805,j4=91.1025)
         # self.dorna.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=39.898125,j1=25.128,j2=-58.237,j3=-53.73,j4=91.1025)
         # self.dorna.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=35.724375,j1=15.381,j2=-59.5015,j3=-44.76375,j4=91.18125)
@@ -167,7 +173,7 @@ class Robot:
         self.dorna.jmove(rel=1,vel=50000,accel=50000,jerk=250000,cont=True,j3=jerk_amount)
         self.dorna.jmove(rel=1,vel=50000,accel=50000,jerk=250000,cont=True,j3=-jerk_amount)
         time.sleep(0.5)
-        # self.dorna.play(file="scripts/jerk.txt")
+        
 
     def linear_act(self, joint_move=linear_act_raise_num):
         self.dorna.jmove(**self.rel,j5=joint_move)
@@ -220,9 +226,13 @@ class Robot:
         
 
     def hexa(self, zone:int, row:int) -> bool:
+        print(f"{zone}  {row}")
         self.canister()
         multiple = self.mult_dict[zone]
-        y_down = row * -multiple + multiple
+        if zone < 4:
+            y_down = row * -multiple + multiple
+        else:
+            y_down = abs(row-25) * multiple
         seal_count = self.load_cell()
         if seal_count == "2_SEAL" or seal_count == "0_SEAL":
             return False
@@ -272,7 +282,7 @@ class Robot:
             elif row > self.threshold[1] and row <= 25:
                 further = False
                 if col == 1:
-                    zone = 2
+                    zone = 4
                     if self.hexa(zone, row):
                         return True
                     else:
