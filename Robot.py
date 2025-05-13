@@ -6,7 +6,7 @@ import types
 import utils
 
 class Robot:
-
+    # to git pull: git pull ryanlee@Ryans-MacBook-Air.local:~/Public/dorna_app
     # scp -r ryanlee@Ryans-MacBook-Air.local:~/Desktop/cap120/dorna_app /home/dorna/Downloads
     # zone 1: row 1-18 col 1
     # zone 4: row 19-25 col 1
