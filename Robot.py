@@ -192,9 +192,7 @@ class Robot:
         self.dorna.jmove(**self.no_rel,j3=0)
 
 
-    def slot(self, zone):
-        for method, params in self.zone_actions.get(zone, ()):
-            method(**self.no_rel, **params)
+        
 
 
     def z_move(self, z = -45):
@@ -226,23 +224,43 @@ class Robot:
         self.z_move(z=30)
         self.dorna.jmove(**self.rel,j0=45)
         
+    def slot(self, zone, row):
+        multiple = self.mult_dict[zone]
+        last_slot = utils.get_last_slot(zone)
+        if last_slot[1] == (zone, row-1):
+            self.dorna.jmove(**self.no_rel,
+                             j0=last_slot[0][0], 
+                             j1=last_slot[0][1], 
+                             j2=last_slot[0][2], 
+                             j3=last_slot[0][3], 
+                             j4=last_slot[0][4],
+                            )
+            if zone < 4:
+                y_down = -multiple
+            else:
+                y_down = -multiple
+        else:
+            if zone < 4:
+                y_down = row * -multiple + multiple
+            else:
+                y_down = abs(row-25) * multiple
+            for method, params in self.zone_actions.get(zone, ()):
+                method(**self.no_rel, **params)
+        self.dorna.lmove(**self.rel, y = y_down)
+        return ((self.dorna.get_all_joint(), (zone, row)))
 
     def hexa(self, zone:int, row:int) -> bool:
         print(f"{zone}  {row}")
         self.canister()
-        multiple = self.mult_dict[zone]
-        if zone < 4:
-            y_down = row * -multiple + multiple
-        else:
-            y_down = abs(row-25) * multiple
         seal_count = self.load_cell()
         if seal_count == "2_SEAL" or seal_count == "0_SEAL":
             return False
-        self.slot(zone)
-        self.dorna.lmove(**self.rel, y = y_down)
+        last_slot = self.slot(zone, row)
+        print(f"Last slot: {last_slot}")
         self.z_move(z=self.hexa_down[zone])
         self.unsuck()
         self.force_drop(zone)
+        utils.save_last_slot(last_slot)
         self.z_move(z=55)
         return True
 
