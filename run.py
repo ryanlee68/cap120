@@ -1,7 +1,13 @@
-from Robot import Robot
+from .Robot import Robot
 from dorna2 import Dorna
 import time
-import utils
+from . import utils
+
+# import asyncio
+# try:
+#     asyncio.get_running_loop()
+# except RuntimeError:
+#     asyncio.set_event_loop(asyncio.new_event_loop())
 # Connect to the robot
 
 def main():
@@ -18,8 +24,8 @@ def main():
     robot = Robot(dorna, vel, accel, jerk, turn, cont)
 
     robot.startup()
-    robot.dorna.output(4,1)
-    robot.dorna.output(0,1)
+    robot.dorna.output(3,1)
+    robot.dorna.output(1,1)
     robot.dorna.jmove(**robot.no_rel,j1=70, j2=0)
     robot.dorna.jmove(**robot.no_rel,j0=0)
 
@@ -32,6 +38,11 @@ def main():
     # robot.dynamic_slot(row=24, col=1)
     # robot.dynamic_slot(row=25, col=1)
     # robot.dynamic_slot(row=j, col=i)
+
+    # while True:
+    #     time.sleep(0.5)
+    #     print(f"pin 2: {robot.dorna.get_input(2)}")
+    #     print(f"pin 6: {robot.dorna.get_input(6)}")
 
     for j in range(1,26):
         for i in range(1,4):

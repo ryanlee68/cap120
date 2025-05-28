@@ -1,6 +1,6 @@
 from dorna2 import Dorna
 import time
-from Robot import Robot
+from .Robot import Robot
 import requests
 
 # Connect to the robot
@@ -20,9 +20,18 @@ dorna.connect(ip)
 robot = Robot(dorna, vel, accel, jerk, turn, cont)
 
 robot.startup()
+while True:
+    print("Waiting for input...")
+    # robot.dorna.output(0,0)
+    time.sleep(5)
+    # robot.dorna.output(0,1)
+    # time.sleep(2)
+    robot.dorna.output(1,1)
+    time.sleep(5)
+    robot.dorna.output(1,0)
 # dorna.robot.output(4,1)
 # dorna.robot.output(0,1)
-dorna.output(0,0)
+robot.dorna.output(0,0)
 # dorna.robot.jmove(rel=0,vel=dorna.vel,accel=dorna.accel,jerk=dorna.jerk,turn=dorna.turn,cont=dorna.cont,j1=70, j2=0)
 # unsuck
 # robot.output(0,1)

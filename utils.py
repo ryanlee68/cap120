@@ -1,6 +1,8 @@
 import pickle
 from pathlib import Path
+import os
 
+os.makedirs("pickle", exist_ok=True)
 COUNT_PICKLE_FILE = Path("pickle/count.pkl")
 
 def save_last_slot(value: tuple) -> None:

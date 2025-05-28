@@ -3,11 +3,19 @@ import time
 import queue
 import dorna2.ws
 import types
-import utils
+from . import utils
 
 class Robot:
+    no_air = False
     # to git pull: git pull ryanlee@Ryans-MacBook-Air.local:~/Public/dorna_lab
+
     # scp -r ryanlee@Ryans-MacBook-Air.local:/Users/ryanlee/Public/dorna_lab /home/dorna/Downloads
+    # to update dorna package go into folder where setup.py and run:  pip install --upgrade --editable .
+    # to connect to ai rasp pi: ssh cap120@10.33.62.132kl mgsf
+    # pass: ingomar123!
+
+    # scp -r /home/cap120/yolo ryanlee@Ryans-MacBook-Air.local:/Users/ryanlee/Public
+
     # zone 1: row 1-18 col 1
     # zone 4: row 19-25 col 1
     # zone 2: row 1-18 col 2
@@ -21,16 +29,16 @@ class Robot:
         3:18
     }
     mult_dict = {
-            1:12.5,
-            2:11.5,
-            3:12,
+            1:17,
+            2:16,
+            3:16,
             4:13,
             5:12,
             6:12
     }
     hexa_down = {
-        1:-39,
-        2:-65,
+        1:-50,
+        2:-56,
         3:-50,
         4:-46,
         5:-50,
@@ -57,11 +65,13 @@ class Robot:
         )
         self.zone_actions = {
             1: [
-                (self.dorna.jmove, dict(j0=89.46,j1=8.4105,j2=-25.7695,j3=21.0825,j4=-42.0075)),
+                # {"cmd":"jmove","rel":0,"j0":89.46,"j1":8.4105,"j2":-25.7695,"j3":18.57375,"j4":-61.16625}
+                (self.dorna.jmove, dict(j0=89.46,j1=8.4105,j2=-25.7695,j3=18.57375,j4=-61.16625)),
             ],
             2: [
+                # {"cmd":"jmove","rel":0,"j0":89.4825,"j1":15.471,"j2":-27.646,"j3":12.7125,"j4":-121.8375}
                 # (self.dorna.jmove, dict(j0=87.609375, j1=20.1735, j2=-30.778, j3=13.08375, j4=-84.34125)),
-                (self.dorna.jmove, dict(j0=89.4825,   j1=18.5175, j2=-29.266, j3=12.7125, j4=-106.47)),
+                (self.dorna.jmove, dict(j0=89.4825,   j1=15.471, j2=-27.646, j3=12.7125, j4=-121.8375)),
             ],
             3: [
                 (self.dorna.jmove, dict(j0=87.103125, j1=6.966,   j2=-30.9985, j3=28.845, j4=195.5925)),
@@ -127,43 +137,50 @@ class Robot:
     dorna2.ws.WS.__setstate__ = _ws_setstate
 
     def suck(self):
-        self.dorna.output(0,0)
+        self.dorna.output(1,0)
     
     def unsuck(self):
-        self.dorna.output(0,1)
+        self.dorna.output(1,1)
 
     def load_cell(self):
-        return "1_SEAL"
-        self.dorna.jmove(**self.no_rel,j0=39.47625,j1=16.488,j2=-52.522,j3=-50.805,j4=91.1025)
+        # {"cmd":"jmove","rel":0,"j0":41.979375,"j1":24.1065,"j2":-60.775,"j3":-50.16375,"j4":108.30375}
+        # return "1_SEAL"
+        self.dorna.jmove(**self.no_rel,j0=41.979375,j1=24.1065,j2=-60.775,j3=-50.16375,j4=108.30375)
         # self.dorna.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=39.898125,j1=25.128,j2=-58.237,j3=-53.73,j4=91.1025)
         # self.dorna.jmove(rel=0,vel=self.vel,accel=self.accel,jerk=self.jerk,turn=self.turn,cont=self.cont,j0=35.724375,j1=15.381,j2=-59.5015,j3=-44.76375,j4=91.18125)
-        self.z_move(-10)
         self.unsuck()
+        self.z_move(-20)
         self.z_move(45)
+        # print(self.dorna.get_input(6))
+        # print(self.dorna.get_input(2))
         if self.dorna.get_input(6) == 1:
             print("1 SEAL DETECTED")
+            print("ttestsedf")
             # self.dorna.output(2,1)
             # self.dorna.output(4,0)
-            self.z_move(-47)
+            self.z_move(-72)
             # self.z_move(-13)
             # self.z_move(-55)
             self.suck()
-            self.z_move(30)
+            self.z_move(50)
             return "1_SEAL"
         elif self.dorna.get_input(2) == 1:
             print("2+ seal(s) detected, blowing lid off load cell")
-            self.dorna.output(4,0)
+            self.dorna.output(3,0)
             # self.dorna.output(2,0)
             while True:
                 if self.dorna.get_input(6) == 0 and self.dorna.get_input(2) == 0:
-                    self.dorna.output(4,1)
+                    self.dorna.output(3,1)
                     # self.dorna.output(2,0)
                     return "2_SEAL"
             # self.trash()
         elif self.dorna.get_input(2) == 0 and self.dorna.get_input(6) == 0:
             linear_num = -4
             print(f"NO SEAL detected, raising linear actuator by {linear_num}")
-            self.linear_act(linear_num)
+            if self.no_air:
+                pass
+            else:
+                self.linear_act(linear_num)
             return "0_SEAL"
 
     def jerk_move(self):
@@ -209,13 +226,19 @@ class Robot:
         
 
     def mid_can(self, x, y):
-        self.dorna.jmove(**self.no_rel,j0=1.513125,j1=69.318,j2=-32.29,j3=-127.83375,j4=94.24125)
+        
+        # {"cmd":"jmove","rel":0,"j0":4.606875,"j1":68.004,"j2":-30.175,"j3":-128.64375,"j4":94.24125}
+
+        self.dorna.jmove(**self.no_rel,j0=4.606875,j1=68.004,j2=-30.175,j3=-128.64375,j4=94.24125)
+
+
         self.dorna.lmove(**self.rel,x=x, y=y)
 
     def canister(self):
+        
         # suck
         self.suck()
-        z = 82
+        z = 89
         # self.mid_can(4,-10)
         self.mid_can(0,0)
         self.z_move(z=-z)
@@ -246,6 +269,7 @@ class Robot:
                 y_down = abs(row-25) * multiple
             for method, params in self.zone_actions.get(zone, ()):
                 method(**self.no_rel, **params)
+        print(f"y_down: {y_down}")
         self.dorna.lmove(**self.rel, y = y_down)
         return ((self.dorna.get_all_joint(), (zone, row)))
 
@@ -257,6 +281,7 @@ class Robot:
             return False
         last_slot = self.slot(zone, row)
         print(f"Last slot: {last_slot}")
+        # self.z_move(z=self.hexa_down[zone])
         self.z_move(z=self.hexa_down[zone])
         self.unsuck()
         self.force_drop(zone)
