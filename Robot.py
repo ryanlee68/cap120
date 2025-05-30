@@ -38,7 +38,7 @@ class Robot:
     }
     hexa_down = {
         1:-50,
-        2:-56,
+        2:-46,
         3:-50,
         4:-46,
         5:-50,
@@ -65,13 +65,12 @@ class Robot:
         )
         self.zone_actions = {
             1: [
-                # {"cmd":"jmove","rel":0,"j0":89.46,"j1":8.4105,"j2":-25.7695,"j3":18.57375,"j4":-61.16625}
-                (self.dorna.jmove, dict(j0=89.46,j1=8.4105,j2=-25.7695,j3=18.57375,j4=-61.16625)),
+                # {"cmd":"jmove","rel":0,"j0":88.779375,"j1":8.8155,"j2":-24.6625,"j3":14.985,"j4":-45}
+                (self.dorna.jmove, dict(j0=88.779375,j1=8.8155,j2=-24.6625,j3=14.985,j4=-45)),
             ],
             2: [
-                # {"cmd":"jmove","rel":0,"j0":89.4825,"j1":15.471,"j2":-27.646,"j3":12.7125,"j4":-121.8375}
-                # (self.dorna.jmove, dict(j0=87.609375, j1=20.1735, j2=-30.778, j3=13.08375, j4=-84.34125)),
-                (self.dorna.jmove, dict(j0=89.4825,   j1=15.471, j2=-27.646, j3=12.7125, j4=-121.8375)),
+                # {"cmd":"jmove","rel":0,"j0":88.610625,"j1":12.8745,"j2":-21.3775,"j3":5.77125,"j4":259.57125}
+                (self.dorna.jmove, dict(j0=88.610625,   j1=12.8745, j2=-21.3775, j3=5.77125, j4=259.57125)),
             ],
             3: [
                 (self.dorna.jmove, dict(j0=87.103125, j1=6.966,   j2=-30.9985, j3=28.845, j4=195.5925)),
@@ -158,7 +157,7 @@ class Robot:
             print("ttestsedf")
             # self.dorna.output(2,1)
             # self.dorna.output(4,0)
-            self.z_move(-72)
+            self.z_move(-56)
             # self.z_move(-13)
             # self.z_move(-55)
             self.suck()
@@ -227,9 +226,9 @@ class Robot:
 
     def mid_can(self, x, y):
         
-        # {"cmd":"jmove","rel":0,"j0":4.606875,"j1":68.004,"j2":-30.175,"j3":-128.64375,"j4":94.24125}
+        # {"cmd":"jmove","rel":0,"j0":1.119375,"j1":73.6875,"j2":-41.065,"j3":-119.1375,"j4":91.5075}
 
-        self.dorna.jmove(**self.no_rel,j0=4.606875,j1=68.004,j2=-30.175,j3=-128.64375,j4=94.24125)
+        self.dorna.jmove(**self.no_rel,j0=1.119375,j1=73.6875,j2=-41.065,j3=-119.1375,j4=91.5075)
 
 
         self.dorna.lmove(**self.rel,x=x, y=y)
@@ -238,7 +237,7 @@ class Robot:
         
         # suck
         self.suck()
-        z = 89
+        z = 83
         # self.mid_can(4,-10)
         self.mid_can(0,0)
         self.z_move(z=-z)
